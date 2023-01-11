@@ -1,0 +1,87 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type TodoModel {
+  id: Int!
+  name: String
+  description: String
+  status: Boolean!
+  userId: Int
+  user: UserModel!
+}
+
+type UserModel {
+  id: Int!
+  username: String!
+  todos: [TodoModel!]!
+  groups: [GroupModel!]!
+}
+
+type UserWithPagination {
+  page: Int
+  pageSize: Int!
+  nextPage: Int
+  itemsCount: Int!
+  total: Int!
+  items: [UserModel!]!
+}
+
+type GroupModel {
+  id: Int!
+  name: String!
+  size: Int!
+  userId: Int!
+  users: [UserModel!]!
+}
+
+type Query {
+  todos: [TodoModel!]!
+  todo(id: Int!): TodoModel!
+  users(page: Float!, size: Float!): UserWithPagination!
+  user(id: Int!): UserModel!
+  groups: [GroupModel!]!
+  groupsByUserId(userId: Float!): [GroupModel!]!
+  myGroups: [GroupModel!]!
+  notJoinedGroup: [GroupModel!]!
+}
+
+type Mutation {
+  createUser(input: CreateUserDTO!): UserModel!
+  updateUser(id: Float!, input: UpdateUserDTO!): UserModel!
+  createGroup(groupData: CreateGroupDTO!): GroupModel!
+  updateGroup(groupData: UpdateGroupDTO!): GroupModel!
+  signin(input: SigninDTO!): UserModel!
+  signup(input: SignUpDTO!): UserModel!
+}
+
+input CreateUserDTO {
+  username: String!
+  hash: String!
+}
+
+input UpdateUserDTO {
+  username: String
+  hash: String
+}
+
+input CreateGroupDTO {
+  name: String!
+  size: Int!
+}
+
+input UpdateGroupDTO {
+  name: String
+  size: Int
+  userIds: [Int!]!
+}
+
+input SigninDTO {
+  username: String!
+  password: String!
+}
+
+input SignUpDTO {
+  username: String!
+  password: String!
+}
