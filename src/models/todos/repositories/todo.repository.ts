@@ -14,4 +14,16 @@ export class TodoRepository extends Repository<TodoEntity> {
     const todos = await this.find({ where: { userId: In([...userIds]) } });
     return todos;
   }
+
+  async getAllTodosByGroupId(groupId: number): Promise<TodoEntity[]> {
+    const todos = await this.createQueryBuilder('todos')
+      .leftJoinAndSelect('todos.user', 'users')
+      .leftJoin('users.groups', 'groups')
+      .where('groups.id = :groupId', { groupId })
+      .andWhere('todos.groupId = :groupId', { groupId })
+      .orderBy('todos.createAt', 'DESC')
+      .getMany();
+
+    return todos;
+  }
 }

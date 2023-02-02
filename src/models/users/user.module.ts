@@ -7,7 +7,6 @@ import { UserController } from './user.controller';
 import { UserResolver } from './user.resolver';
 import { TodoModule } from '../todos/todo.module';
 import { GroupModule } from '../groups/group.module';
-
 @Module({
   imports: [TypeOrmModule.forFeature([UserEntity]), TodoModule, GroupModule],
   controllers: [UserController],

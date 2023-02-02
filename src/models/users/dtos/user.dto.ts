@@ -9,6 +9,7 @@ import {
 import { ApiProperty } from '@nestjs/swagger';
 import { Expose } from 'class-transformer';
 import { TodoModel } from 'src/models/todos/dto/todo.dto';
+import { Paginated } from '../../../common/pagination';
 
 @ObjectType()
 export class UserModel {
@@ -38,3 +39,6 @@ export class CreateUserDTO {
 
 @InputType()
 export class UpdateUserDTO extends PartialType(CreateUserDTO) {}
+
+@ObjectType()
+export class PaginatedUser extends Paginated(UserModel) {}

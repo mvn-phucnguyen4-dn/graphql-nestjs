@@ -15,36 +15,64 @@ import {
 } from 'apollo-server-express';
 import { plainToClass } from 'class-transformer';
 import { UserService } from './user.service';
-import { GroupService } from '../groups/group.service';
 import { UserRepository } from './repositories';
 import { UserEntity } from './entities';
 import {
   IGroupDataLoader,
   ITodoDataLoader,
 } from 'src/dataloader/dataloader.interface';
-import {
-  CreateUserDTO,
-  UpdateUserDTO,
-  UserModel,
-  UserWithPagination,
-} from './dtos';
+import { CreateUserDTO, PaginatedUser, UpdateUserDTO, UserModel } from './dtos';
 import { TodoModel } from '../todos/dto/todo.dto';
 import { GroupModel } from '../groups/dtos/group.dto';
+import { convertCursorToNodeId, convertNodeIdToCursor } from 'src/utils';
 
 @Resolver((of) => UserModel)
 export class UserResolver {
   constructor(
     private userService: UserService,
     private userRepository: UserRepository,
-    private groupService: GroupService,
   ) {}
 
-  @Query((returns) => UserWithPagination, { name: 'users' })
+  @Query((returns) => PaginatedUser, { name: 'users' })
   async getAllUser(
-    @Args('page') page: number,
-    @Args('size') size: number,
-  ): Promise<UserWithPagination> {
-    return this.userService.getAllUser(page, size);
+    @Args('first') first: number,
+    @Args('after') after: string,
+    @Args('offset') offset: number,
+  ) {
+    const users = await this.userService.getAllUser();
+    let afterIndex = offset;
+    if (typeof after === 'string') {
+      /* Extracting nodeId from after */
+      const nodeId = +convertCursorToNodeId(after);
+      /* Finding the index of nodeId */
+      const nodeIndex = users.findIndex((user) => user.id === nodeId);
+      if (nodeIndex >= 0) {
+        afterIndex += nodeIndex + 1; // 1 is added to exclude the afterIndex node and include items after it
+      }
+    }
+    const slicedUsers = users.slice(afterIndex, afterIndex + first);
+    const edges = slicedUsers.map((node: UserModel) => ({
+      node,
+      cursor: convertNodeIdToCursor(node),
+    }));
+    let startCursor,
+      endCursor = null;
+    if (edges.length > 0) {
+      startCursor = convertNodeIdToCursor(edges[0].node);
+      endCursor = convertNodeIdToCursor(edges[edges.length - 1].node);
+    }
+    const hasNextPage = users.length > afterIndex + first;
+
+    return plainToClass(
+      PaginatedUser,
+      {
+        totalCount: users.length,
+        hasNextPage,
+        edges,
+        endCursor,
+      },
+      { excludeExtraneousValues: true },
+    );
   }
 
   @Query((returns) => UserModel, { name: 'user' })
@@ -59,6 +87,7 @@ export class UserResolver {
   ) {
     const { id: userId } = user;
     return todoLoaders.todoLoader.load(userId);
+    // return this.todoService.getTodoByUserId(userId);
   }
 
   @ResolveField('groups', (returns) => [GroupModel])

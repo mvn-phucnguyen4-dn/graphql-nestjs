@@ -9,6 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities';
+import { GroupEntity } from '../../groups/entities';
 
 @Entity({ name: 'todos' })
 export class TodoEntity {
@@ -27,6 +28,9 @@ export class TodoEntity {
   @Column({ type: 'int', name: 'user_id' })
   userId: number;
 
+  @Column({ type: 'int', name: 'group_id', nullable: true })
+  groupId: number;
+
   @CreateDateColumn({ nullable: true, name: 'create_at' })
   createAt: Date;
 
@@ -39,4 +43,8 @@ export class TodoEntity {
   @ManyToOne(() => UserEntity, (user) => user.todos)
   @JoinColumn({ name: 'user_id' })
   user: UserEntity;
+
+  @ManyToOne(() => GroupEntity, (group) => group.todos)
+  @JoinColumn({ name: 'group_id' })
+  group: UserEntity;
 }

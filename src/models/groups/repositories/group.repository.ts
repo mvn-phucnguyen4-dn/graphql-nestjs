@@ -1,8 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DataSource, In, Repository } from 'typeorm';
 import { GroupEntity } from '../entities';
-import { GroupModel } from '../dtos';
-
 @Injectable()
 export class GroupRepository extends Repository<GroupEntity> {
   constructor(private datasource: DataSource) {
@@ -11,7 +9,7 @@ export class GroupRepository extends Repository<GroupEntity> {
 
   async getAllGroupsByUserIds(
     userIds: readonly number[],
-  ): Promise<GroupModel[]> {
+  ): Promise<GroupEntity[]> {
     const todos = await this.find({ where: { userId: In([...userIds]) } });
     return todos;
   }

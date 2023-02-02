@@ -3,6 +3,9 @@ import { GroupRepository } from './repositories';
 import { plainToClass } from 'class-transformer';
 import { CreateGroupDTO, GroupModel, UpdateGroupDTO } from './dtos/group.dto';
 import { UserEntity } from '../users/entities';
+import { Directive } from '@nestjs/graphql';
+import { GroupEntity } from './entities';
+import { ApolloError } from 'apollo-server-express';
 
 @Injectable()
 export class GroupService {
@@ -13,6 +16,13 @@ export class GroupService {
     return plainToClass(GroupModel, groups, { excludeExtraneousValues: true });
   }
 
+  async getGroupById(groupId: number): Promise<GroupModel> {
+    const group = await this.groupRepository.findOne({
+      where: { id: groupId },
+    });
+    return plainToClass(GroupModel, group, { excludeExtraneousValues: true });
+  }
+
   async getGroupsUserByBatch(userIds: number[]): Promise<GroupModel[] | any[]> {
     const groups = await this.groupRepository.getAllGroupsByUserIds(userIds);
     const mappedResult = this.mapResultToIds(userIds, groups);
@@ -21,7 +31,7 @@ export class GroupService {
     });
   }
 
-  mapResultToIds(userIds: number[], groups: GroupModel[]): any[] {
+  mapResultToIds(userIds: number[], groups: GroupEntity[]): any[] {
     return userIds.map((userId) =>
       groups.filter((group) => group.userId == userId || null),
     );
@@ -34,7 +44,7 @@ export class GroupService {
 
   async getJoinedGroup(userId: number): Promise<GroupModel[]> {
     const groups = await this.groupRepository.getJoinedGroup(userId);
-    return groups;
+    return plainToClass(GroupModel, groups, { excludeExtraneousValues: true });
   }
 
   async getNotJoinedGroup(userId: number): Promise<GroupModel[]> {
@@ -44,7 +54,9 @@ export class GroupService {
       (group) =>
         !joinedGroups.map((joinedGroup) => joinedGroup.id).includes(group.id),
     );
-    return notJoinedGroups;
+    return plainToClass(GroupModel, notJoinedGroups, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async createGroup(
@@ -60,16 +72,24 @@ export class GroupService {
     id: number,
     groupData: UpdateGroupDTO,
   ): Promise<GroupModel> {
-    const group = this.groupRepository.create({ id, ...groupData });
-    group.users = [];
+    const group: GroupEntity = await this.groupRepository.findOne({
+      where: { id: id },
+    });
+
+    if (group.size < groupData?.userIds.length)
+      throw new ApolloError('Room full');
+    const updateGroup = this.groupRepository.create({ id, ...groupData });
+    updateGroup.users = [];
     if (groupData.userIds) {
       for (const userId of groupData.userIds) {
         const user = new UserEntity();
         user.id = userId;
-        group.users.push(user);
+        updateGroup.users.push(user);
       }
     }
-    await this.groupRepository.save(group);
-    return plainToClass(GroupModel, group, { excludeExtraneousValues: true });
+    await this.groupRepository.save(updateGroup);
+    return plainToClass(GroupModel, updateGroup, {
+      excludeExtraneousValues: true,
+    });
   }
 }

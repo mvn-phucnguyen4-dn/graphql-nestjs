@@ -11,6 +11,18 @@ type TodoModel {
   user: UserModel!
 }
 
+type TodoModelEdge {
+  cursor: String!
+  node: TodoModel!
+}
+
+type PaginatedTodo {
+  edges: [TodoModelEdge!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+  endCursor: String!
+}
+
 type UserModel {
   id: Int!
   username: String!
@@ -18,41 +30,54 @@ type UserModel {
   groups: [GroupModel!]!
 }
 
-type UserWithPagination {
-  page: Int
-  pageSize: Int!
-  nextPage: Int
-  itemsCount: Int!
-  total: Int!
-  items: [UserModel!]!
+type UserModelEdge {
+  cursor: String!
+  node: UserModel!
+}
+
+type PaginatedUser {
+  edges: [UserModelEdge!]
+  totalCount: Int!
+  hasNextPage: Boolean!
+  endCursor: String!
 }
 
 type GroupModel {
   id: Int!
-  name: String!
+  name: String
   size: Int!
   userId: Int!
   users: [UserModel!]!
+  todos: [TodoModel!]!
 }
 
 type Query {
-  todos: [TodoModel!]!
+  todos(first: Float!, after: String!, offset: Float!): PaginatedTodo!
   todo(id: Int!): TodoModel!
-  users(page: Float!, size: Float!): UserWithPagination!
+  users(first: Float!, after: String!, offset: Float!): PaginatedUser!
   user(id: Int!): UserModel!
   groups: [GroupModel!]!
+  groupById(groupId: Float!): GroupModel!
   groupsByUserId(userId: Float!): [GroupModel!]!
   myGroups: [GroupModel!]!
   notJoinedGroup: [GroupModel!]!
 }
 
 type Mutation {
+  createTodo(todoData: CreateTodoDTO!): TodoModel!
   createUser(input: CreateUserDTO!): UserModel!
   updateUser(id: Float!, input: UpdateUserDTO!): UserModel!
   createGroup(groupData: CreateGroupDTO!): GroupModel!
-  updateGroup(groupData: UpdateGroupDTO!): GroupModel!
+  updateGroup(groupId: Float!, groupData: UpdateGroupDTO!): GroupModel!
   signin(input: SigninDTO!): UserModel!
   signup(input: SignUpDTO!): UserModel!
+}
+
+input CreateTodoDTO {
+  name: String!
+  description: String!
+  status: Boolean!
+  groupId: Int!
 }
 
 input CreateUserDTO {
@@ -84,4 +109,8 @@ input SigninDTO {
 input SignUpDTO {
   username: String!
   password: String!
+}
+
+type Subscription {
+  todoAdded: TodoModel!
 }

@@ -1,13 +1,19 @@
-import { Field, InputType } from '@nestjs/graphql';
-import { ApiProperty } from '@nestjs/swagger';
+import { Field, InputType, ObjectType } from '@nestjs/graphql';
 
 @InputType()
 export class SignUpDTO {
-  // @ApiProperty()
   @Field({ nullable: false })
   username: string;
 
-  // @ApiProperty()
   @Field({ nullable: false })
   password: string;
+}
+
+@ObjectType()
+export class SigninMutationResponse {
+  @Field()
+  username: string;
+
+  @Field()
+  userId: string;
 }

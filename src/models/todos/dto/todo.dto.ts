@@ -7,6 +7,7 @@ import {
 } from '@nestjs/graphql';
 import { Expose } from 'class-transformer';
 import { UserModel } from 'src/models/users/dtos/user.dto';
+import { Paginated } from '../../../common/pagination';
 
 @ObjectType()
 export class TodoModel {
@@ -37,22 +38,21 @@ export class TodoModel {
 
 @InputType()
 export class CreateTodoDTO {
-  @Expose()
   @Field()
   name: string;
 
-  @Expose()
   @Field()
   description: string;
 
-  @Expose()
   @Field()
   status: boolean;
 
-  @Expose()
-  @Field((type) => Int, { nullable: true })
-  userId: number;
+  @Field((type) => Int)
+  groupId: number;
 }
 
 @InputType()
 export class UpdateTodoDTO extends PartialType(CreateTodoDTO) {}
+
+@ObjectType()
+export class PaginatedTodo extends Paginated(TodoModel) {}

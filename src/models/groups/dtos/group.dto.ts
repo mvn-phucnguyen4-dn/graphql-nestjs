@@ -1,4 +1,5 @@
 import {
+  Directive,
   Field,
   InputType,
   Int,
@@ -6,6 +7,7 @@ import {
   PartialType,
 } from '@nestjs/graphql';
 import { Expose } from 'class-transformer';
+import { TodoModel } from 'src/models/todos/dto/todo.dto';
 import { UserModel } from 'src/models/users/dtos';
 
 @ObjectType()
@@ -14,7 +16,10 @@ export class GroupModel {
   @Expose()
   id: number;
 
-  @Field((type) => String)
+  @Directive(
+    '@deprecated(reason: "This query will be removed in the next version")',
+  )
+  @Field((type) => String, { nullable: true })
   @Expose()
   name: string;
 
@@ -29,6 +34,10 @@ export class GroupModel {
   @Field((type) => [UserModel])
   @Expose()
   users: UserModel[];
+
+  @Field((type) => [TodoModel])
+  @Expose()
+  todos: TodoModel[];
 }
 
 @InputType()

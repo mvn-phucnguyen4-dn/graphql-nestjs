@@ -8,7 +8,6 @@ import { TodoModule } from 'src/models/todos/todo.module';
 import { GraphQLProviderModule } from 'src/provider/graphQl/provider.module';
 import { AuthModule } from 'src/auth/auth.module';
 import { GroupModule } from 'src/models/groups/group.module';
-import { SocketModule } from 'src/socket/socket.module';
 
 @Module({
   imports: [
@@ -19,7 +18,6 @@ import { SocketModule } from 'src/socket/socket.module';
     TodoModule,
     GroupModule,
     AuthModule,
-    SocketModule,
   ],
   controllers: [AppController],
   providers: [AppService],

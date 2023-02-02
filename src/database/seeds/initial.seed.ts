@@ -13,6 +13,7 @@ export default class InitialDatabaseSeed implements Seeder {
         group.userId = faker.helpers.arrayElement(users.map((user) => user.id));
         const usersInGroup: UserEntity[] = faker.helpers.arrayElements(
           users.filter((user) => user.id != group.userId),
+          faker.datatype.number({ min: 0, max: group.size }),
         );
         group.users = usersInGroup;
         return group;
@@ -21,8 +22,15 @@ export default class InitialDatabaseSeed implements Seeder {
     const todos: TodoEntity[] = await factory(TodoEntity)()
       .map(async (todo) => {
         todo.userId = faker.helpers.arrayElement(users.map((user) => user.id));
+        todo.groupId = faker.helpers.arrayElement(
+          groups
+            .filter((group) =>
+              group.users.map((user) => user.id).includes(todo.userId),
+            )
+            .map((group) => group.id),
+        );
         return todo;
       })
-      .createMany(20);
+      .createMany(100);
   }
 }

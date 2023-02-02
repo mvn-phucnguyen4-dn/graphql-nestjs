@@ -3,9 +3,11 @@ import {
   Entity,
   JoinTable,
   ManyToMany,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { UserEntity } from '../../users/entities';
+import { TodoEntity } from '../../todos/entities';
 
 @Entity({ name: 'groups' })
 export class GroupEntity {
@@ -20,6 +22,9 @@ export class GroupEntity {
 
   @Column({ type: 'int', name: 'user_id' })
   userId: number;
+
+  @OneToMany(() => TodoEntity, (todo) => todo.group)
+  todos: TodoEntity[];
 
   @ManyToMany(() => UserEntity, (user) => user.groups)
   @JoinTable({

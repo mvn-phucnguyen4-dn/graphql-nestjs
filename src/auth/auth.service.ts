@@ -13,26 +13,30 @@ export class AuthService {
   async signin(signinData: SigninDTO): Promise<UserModel> {
     const { username, password } = signinData;
 
-    const user = await this.userRepository.findOne({
+    const existingUser = await this.userRepository.findOne({
       where: { username },
     });
-    if (!user) throw new ForbiddenError('User not found');
-    const passwordIsMatch = bcrypt.compareSync(password, user.hash);
+    if (!existingUser) throw new ForbiddenError('User not found');
+    const passwordIsMatch = bcrypt.compareSync(password, existingUser.hash);
     if (!passwordIsMatch) throw new AuthenticationError('Password incorrect!');
-    return plainToClass(UserModel, user, { excludeExtraneousValues: true });
+    return plainToClass(UserModel, existingUser, {
+      excludeExtraneousValues: true,
+    });
   }
 
   async signup(signupData: SignUpDTO): Promise<UserModel> {
     const { username, password } = signupData;
-    const user = await this.userRepository.findOne({ where: { username } });
-    if (user) throw new ForbiddenError('User existed!');
+    const existingUser = await this.userRepository.findOne({
+      where: { username },
+    });
+    if (existingUser) throw new ForbiddenError('User existed!');
 
-    const createUser = this.userRepository.create({
+    const newUser = this.userRepository.create({
       username: username,
       hash: password,
     });
-    await this.userRepository.save(createUser);
-    return plainToClass(UserModel, createUser, {
+    await this.userRepository.save(newUser);
+    return plainToClass(UserModel, newUser, {
       excludeExtraneousValues: true,
     });
   }
